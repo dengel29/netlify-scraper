@@ -1,18 +1,18 @@
-const chromium = require('chrome-aws-lambda')
-const puppeteer = require('puppeteer-core')
+import { puppeteer as _puppeteer, args as _args, defaultViewport as _defaultViewport, executablePath as _executablePath, headless as _headless } from 'chrome-aws-lambda';
+// import puppeteer from 'puppeteer-core';
 
-exports.handler = async (event, context) => {
+export async function handler(event, context) {
   // your server-side functionality
 
   let result = null;
   let browser = null;
 
   try {
-    browser = await chromium.puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
+    browser = await _puppeteer.launch({
+      args: _args,
+      defaultViewport: _defaultViewport,
+      executablePath: await _executablePath,
+      headless: _headless,
     });
  
     let page = await browser.newPage();

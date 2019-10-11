@@ -1,32 +1,54 @@
-import { puppeteer as _puppeteer, args as _args, defaultViewport as _defaultViewport, executablePath as _executablePath, headless as _headless } from 'chrome-aws-lambda';
-// import puppeteer from 'puppeteer-core';
+const chromium = require('chrome-aws-lambda')
+const puppeteer = require('puppeteer-core')
 
-export async function handler(event, context) {
-  // your server-side functionality
-
-  let result = null;
-  let browser = null;
-
+exports.handler = async (event, context, callback) => {
+  let theTitle = null
+  let browser = null
+  console.log('spawning chrome headless')
   try {
-    browser = await _puppeteer.launch({
-      args: _args,
-      defaultViewport: _defaultViewport,
-      executablePath: await _executablePath,
-      headless: _headless,
-    });
- 
-    let page = await browser.newPage();
- 
-    await page.goto(event.url || 'https://store.steampowered.com/search/?sort_by=Released_DESC&ignore_preferences=1&category1=998');
- 
-    result = await page.title();
+    const executablePath = await chromium.executablePath
+
+    // setup
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: executablePath,
+      headless: chromium.headless,
+    })
+
+    // Do stuff with headless chrome
+    const page = await browser.newPage()
+    const targetUrl = 'https://davidwells.io'
+
+    // Goto page and then do stuff
+    await page.goto(targetUrl, {
+      waitUntil: ["domcontentloaded", "networkidle0"]
+    })
+
+    await page.waitForSelector('#phenomic')
+
+    theTitle = await page.title();
+
+    console.log('done on page', theTitle)
+
   } catch (error) {
-    return context.fail(error);
+    console.log('error', error)
+    return callback(null, {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: error
+      })
+    })
   } finally {
+    // close browser
     if (browser !== null) {
-      await browser.close();
+      await browser.close()
     }
   }
- 
-  return context.succeed(result);
+
+  return callback(null, {
+    statusCode: 200,
+    body: JSON.stringify({
+      title: theTitle,
+    })
+  })
 }
